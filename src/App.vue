@@ -1,42 +1,97 @@
 <script setup>
 
-const tasks= [
+import { ref, reactive, computed } from 'vue';
+import Task from './components/Task.vue';
+import Filters from './components/Filters.vue';
+
+//Place for variables---------
+const newTask= {completed: false};
+
+const tasks= reactive([
     {
+      id: 1,
       name: "Website design",
       description: "Define the style guide, branding and create the webdesign on Figma.",
       completed: true
     },
     {
+      id: 2,
       name: "Website development",
       description: "Develop the portfolio website using Vue JS.",
       completed: false
     },
     {
+      id: 3,
       name: "Hosting and infrastructure",
       description: "Define hosting, domain and infrastructure for the portfolio website.",
       completed: false
     },
     {
+      id: 4,
       name: "Composition API",
       description: "Learn how to use the composition API and how it compares to the options API.",
       completed: true
     },
     {
+      id: 5,
       name: "Pinia",
       description: "Learn how to setup a store using Pinia.",
       completed: true
     },
     {
+      id: 6,
       name: "Groceries",
       description: "Buy rice, apples and potatos.",
       completed: false
     },
     {
+      id: 7,
       name: "Bank account",
       description: "Open a bank account for my freelance business.",
       completed: false
     }
-];
+]);
+
+const filterBy = ref("")
+// Place fro the functions-----------
+
+const filteredTasks= computed(()=>{
+  switch (filterBy.value) {
+    case 'todo':
+      return tasks.filter(task=> !task.completed)
+      break;
+    case 'done':
+      return tasks.filter(task => task.completed)
+      break;
+    default:
+      return tasks;
+  }
+})
+
+function addTask(){
+  if( newTask.name && newTask.description){
+    tasks.push({ ...newTask, id: tasks.length+1 })
+    newTask.name = '';
+    newTask.description = '';
+    console.log(tasks)
+  }else{
+    alert("Please fill all fields")
+  }
+}
+
+const toggleCompleted= (id)=>{
+  console.log(id)
+  tasks.forEach(task=>{
+    if(task.id===id){
+      task.completed= !task.completed
+    }
+  })
+}
+
+const filterClicked= (value)=>{
+  filterBy.value=value;
+  console.log(filterBy.value)
+}
 
 </script>
 
@@ -51,62 +106,17 @@ const tasks= [
       </div>
     </div>
     
-    <div class="filters">
-      <div>
-        <p>Filter by state</p>
-        <div class="badges">
-          <div class="badge">
-            To-Do
-          </div>
-          <div class="badge">
-            Done
-          </div>
-          <span class="clear">
-            x clear
-          </span>
-        </div>
-      </div>
-    </div>
+    <Filters :filterBy="filterBy" @filterClicked="filterClicked"/>
 
     <div class="tasks">
-      
-      <div class="task">
-        <h3>
-          Website design
-        </h3>
-        <p>
-          Define the style guide, branding and create the webdesign on Figma.
-        </p>
-        <div class="task-check">
-          <input type="checkbox" checked />
-          <label>
-            Done
-          </label>
-        </div>
-      </div>
-
-      <div class="task">
-        <h3>
-          Website development
-        </h3>
-        <p>
-          Develop the portfolio website using Vue JS.
-        </p>
-        <div class="task-check">
-          <input type="checkbox"/>
-          <label>
-            To-Do
-          </label>
-        </div>
-      </div>
-
+      <Task @toggleCompleted="toggleCompleted" v-for="(task, index) in filteredTasks" :key="index" :task="task"/>
     </div>
 
     <div class="add-task">
       <h3>Add a new task</h3>
-      <input type="text" name="title" placeholder="Enter a title..."><br />
-      <textarea name="description" rows="4" placeholder="Enter a description..." /><br />
-      <button class="btn gray">Add Task</button>
+      <input v-model="newTask.name" type="text" name="title" placeholder="Enter a title..."><br />
+      <textarea v-model="newTask.description" name="description" rows="4" placeholder="Enter a description..." /><br />
+      <button @click="addTask" class="btn gray">Add Task</button>
 
     </div>
 
@@ -144,37 +154,7 @@ const tasks= [
 
 }
 
-.filters {
-  display: flex;
-  flex-direction: column;
-  margin: 40px 0;
 
-  p {
-    font-size: 16px;
-    font-weight: 400;
-    line-height: 21px;
-    letter-spacing: 0em;
-    text-align: left;
-  }
-
-  .badges {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-    margin: 14px 0;
-    align-items: center;
-  }
-
-  .clear {
-    font-size: 14px;
-    font-weight: 400;
-    line-height: 16px;
-    letter-spacing: 0em;
-    text-align: left;
-    cursor: pointer;
-  }
-
-}
 
 .tasks {
   display: grid;
@@ -183,83 +163,6 @@ const tasks= [
 
   @media (max-width: 768px) {
     grid-template-columns: repeat(1, 1fr);
-  }
-}
-
-.task {
-  display: flex;
-  flex-direction: column;
-  background-color: var(--white-color);
-  color: var(--black-color);
-  padding: 20px;
-  border-radius: 12px;
-  position: relative;
-
-
-  h3 {
-    font-size: 20px;
-    font-weight: 700;
-    line-height: 21px;
-    letter-spacing: 0em;
-    text-align: left;
-  }
-
-  p {
-    margin-top: 24px;
-    margin-bottom: 12px;
-    font-size: 16px;
-    font-weight: 400;
-    line-height: 16px;
-    letter-spacing: 0em;
-    text-align: left;
-  }
-
-
-  .task-check {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: absolute;
-    bottom: 10px;
-    right: 10px;
-
-    label {
-      font-size: 13px;
-      font-weight: 400;
-      line-height: 16px;
-      letter-spacing: 0em;
-      text-align: left;
-      margin-left: 5px;
-      cursor: pointer;
-    }
-
-    input {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      width: 18px;
-      height: 18px;
-      border-radius: 100%;
-      border: 0.77px solid #AEAEB2;
-      appearance: none;
-      cursor: pointer;
-
-
-      &:checked {
-        background-color: #0A7AFF;
-        border-color: #0A7AFF;
-
-        &::before {
-          content: '';
-          display: block;
-          width: 4.5px;
-          height: 9px;
-          border: solid white;
-          border-width: 0 2px 2px 0;
-          transform: rotate(45deg);
-        }
-      }
-    }
   }
 }
 
