@@ -1,134 +1,136 @@
 <script setup>
-
-import { ref, reactive, computed } from 'vue';
-import Task from './components/Task.vue';
-import Filters from './components/Filters.vue';
+import { ref, reactive, computed } from "vue";
+import Task from "./components/Task.vue";
+import Filters from "./components/Filters.vue";
+import ModalWindow from "./components/modal/ModalWindow.vue";
+import AddTaskModal from "./components/modal/AddTaskModal.vue";
 
 //Place for variables---------
-const newTask= {completed: false};
+const newTask = { completed: false };
 
-const tasks= reactive([
-    {
-      id: 1,
-      name: "Website design",
-      description: "Define the style guide, branding and create the webdesign on Figma.",
-      completed: true
-    },
-    {
-      id: 2,
-      name: "Website development",
-      description: "Develop the portfolio website using Vue JS.",
-      completed: false
-    },
-    {
-      id: 3,
-      name: "Hosting and infrastructure",
-      description: "Define hosting, domain and infrastructure for the portfolio website.",
-      completed: false
-    },
-    {
-      id: 4,
-      name: "Composition API",
-      description: "Learn how to use the composition API and how it compares to the options API.",
-      completed: true
-    },
-    {
-      id: 5,
-      name: "Pinia",
-      description: "Learn how to setup a store using Pinia.",
-      completed: true
-    },
-    {
-      id: 6,
-      name: "Groceries",
-      description: "Buy rice, apples and potatos.",
-      completed: false
-    },
-    {
-      id: 7,
-      name: "Bank account",
-      description: "Open a bank account for my freelance business.",
-      completed: false
-    }
+const tasks = reactive([
+  {
+    id: 1,
+    name: "Website design",
+    description:
+      "Define the style guide, branding and create the webdesign on Figma.",
+    completed: true,
+  },
+  {
+    id: 2,
+    name: "Website development",
+    description: "Develop the portfolio website using Vue JS.",
+    completed: false,
+  },
+  {
+    id: 3,
+    name: "Hosting and infrastructure",
+    description:
+      "Define hosting, domain and infrastructure for the portfolio website.",
+    completed: false,
+  },
+  {
+    id: 4,
+    name: "Composition API",
+    description:
+      "Learn how to use the composition API and how it compares to the options API.",
+    completed: true,
+  },
+  {
+    id: 5,
+    name: "Pinia",
+    description: "Learn how to setup a store using Pinia.",
+    completed: true,
+  },
+  {
+    id: 6,
+    name: "Groceries",
+    description: "Buy rice, apples and potatos.",
+    completed: false,
+  },
+  {
+    id: 7,
+    name: "Bank account",
+    description: "Open a bank account for my freelance business.",
+    completed: false,
+  },
 ]);
 
-const filterBy = ref("")
+const filterBy = ref("");
+const modalIsActive = ref(false);
 // Place fro the functions-----------
 
-const filteredTasks= computed(()=>{
+const filteredTasks = computed(() => {
   switch (filterBy.value) {
-    case 'todo':
-      return tasks.filter(task=> !task.completed)
+    case "todo":
+      return tasks.filter((task) => !task.completed);
       break;
-    case 'done':
-      return tasks.filter(task => task.completed)
+    case "done":
+      return tasks.filter((task) => task.completed);
       break;
     default:
       return tasks;
   }
-})
+});
 
-function addTask(){
-  if( newTask.name && newTask.description){
-    tasks.push({ ...newTask, id: tasks.length+1 })
-    newTask.name = '';
-    newTask.description = '';
-    console.log(tasks)
-  }else{
-    alert("Please fill all fields")
+function addTask() {
+  if (newTask.name && newTask.description) {
+    tasks.push({ ...newTask, id: tasks.length + 1 });
+    newTask.name = "";
+    newTask.description = "";
+    console.log(tasks);
+  } else {
+    alert("Please fill all fields");
   }
 }
 
-const toggleCompleted= (id)=>{
-  console.log(id)
-  tasks.forEach(task=>{
-    if(task.id===id){
-      task.completed= !task.completed
+const toggleCompleted = (id) => {
+  console.log(id);
+  tasks.forEach((task) => {
+    if (task.id === id) {
+      task.completed = !task.completed;
     }
-  })
-}
+  });
+};
 
-const filterClicked= (value)=>{
-  filterBy.value=value;
-  console.log(filterBy.value)
-}
-
+const filterClicked = (value) => {
+  filterBy.value = value;
+  console.log(filterBy.value);
+};
 </script>
 
 <template>
-
   <main class="container">
     <div class="header">
       <div class="header-side">
-        <h1>
-          Tasks Manager
-        </h1>
+        <h1>Tasks Manager</h1>
+      </div>
+
+      <div class="header-side">
+        <button @click="modalIsActive = true" class="btn secondary">
+          + Add Task
+        </button>
       </div>
     </div>
-    
-    <Filters :filterBy="filterBy" @filterClicked="filterClicked"/>
+
+    <Filters :filterBy="filterBy" @filterClicked="filterClicked" />
 
     <div class="tasks">
-      <Task @toggleCompleted="toggleCompleted" v-for="(task, index) in filteredTasks" :key="index" :task="task"/>
+      <Task
+        @toggleCompleted="toggleCompleted"
+        v-for="(task, index) in filteredTasks"
+        :key="index"
+        :task="task"
+      />
     </div>
 
-    <div class="add-task">
-      <h3>Add a new task</h3>
-      <input v-model="newTask.name" type="text" name="title" placeholder="Enter a title..."><br />
-      <textarea v-model="newTask.description" name="description" rows="4" placeholder="Enter a description..." /><br />
-      <button @click="addTask" class="btn gray">Add Task</button>
-
-    </div>
-
+    <ModalWindow v-if="modalIsActive" @closeModal="modalIsActive = false">
+      <AddTaskModal/>
+    </ModalWindow>
   </main>
-  
-   
-
 </template>
 
-
 <style lang="scss" scoped>
-
 .header {
   display: flex;
   justify-content: space-between;
@@ -151,10 +153,7 @@ const filterClicked= (value)=>{
       margin-left: 12px;
     }
   }
-
 }
-
-
 
 .tasks {
   display: grid;
@@ -169,7 +168,8 @@ const filterClicked= (value)=>{
 .add-task {
   margin-top: 60px;
 
-  input, textarea {
+  input,
+  textarea {
     width: 360px;
     max-width: 100%;
     margin-top: 12px;
@@ -181,6 +181,4 @@ const filterClicked= (value)=>{
     margin-top: 12px;
   }
 }
-
-
 </style>
