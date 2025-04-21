@@ -4,99 +4,16 @@ import Task from "./components/Task.vue";
 import Filters from "./components/Filters.vue";
 import ModalWindow from "./components/modal/ModalWindow.vue";
 import AddTaskModal from "./components/modal/AddTaskModal.vue";
+import { useTasksStore } from "./stores/tasksStore";
 
-//Place for variables---------
-const newTask = { completed: false };
+//Store---------
+const store= useTasksStore();
 
-const tasks = reactive([
-  {
-    id: 1,
-    name: "Website design",
-    description:
-      "Define the style guide, branding and create the webdesign on Figma.",
-    completed: true,
-  },
-  {
-    id: 2,
-    name: "Website development",
-    description: "Develop the portfolio website using Vue JS.",
-    completed: false,
-  },
-  {
-    id: 3,
-    name: "Hosting and infrastructure",
-    description:
-      "Define hosting, domain and infrastructure for the portfolio website.",
-    completed: false,
-  },
-  {
-    id: 4,
-    name: "Composition API",
-    description:
-      "Learn how to use the composition API and how it compares to the options API.",
-    completed: true,
-  },
-  {
-    id: 5,
-    name: "Pinia",
-    description: "Learn how to setup a store using Pinia.",
-    completed: true,
-  },
-  {
-    id: 6,
-    name: "Groceries",
-    description: "Buy rice, apples and potatos.",
-    completed: false,
-  },
-  {
-    id: 7,
-    name: "Bank account",
-    description: "Open a bank account for my freelance business.",
-    completed: false,
-  },
-]);
+//State subscription
+store.$subscribe((mutation, state) => {
+  localStorage.setItem('tasks', JSON.stringify(state.tasks))
+})
 
-const filterBy = ref("");
-const modalIsActive = ref(false);
-// Place fro the functions-----------
-
-const filteredTasks = computed(() => {
-  switch (filterBy.value) {
-    case "todo":
-      return tasks.filter((task) => !task.completed);
-      break;
-    case "done":
-      return tasks.filter((task) => task.completed);
-      break;
-    default:
-      return tasks;
-  }
-});
-
-function addTask() {
-  if (newTask.name && newTask.description) {
-    tasks.push({ ...newTask, id: tasks.length + 1 });
-    newTask.name = "";
-    newTask.description = "";
-    console.log(tasks);
-  } else {
-    alert("Please fill all fields");
-  }
-}
-
-const toggleCompleted = (id) => {
-  console.log(id);
-  tasks.forEach((task) => {
-    if (task.id === id) {
-      task.completed = !task.completed;
-    }
-  });
-};
-
-const filterClicked = (value) => {
-  filterBy.value = value;
-  console.log(filterBy.value);
-};
 </script>
 
 <template>
@@ -107,24 +24,23 @@ const filterClicked = (value) => {
       </div>
 
       <div class="header-side">
-        <button @click="modalIsActive = true" class="btn secondary">
+        <button @click="store.modalIsActive = true" class="btn secondary">
           + Add Task
         </button>
       </div>
     </div>
 
-    <Filters :filterBy="filterBy" @filterClicked="filterClicked" />
+    <Filters />
 
     <div class="tasks">
       <Task
-        @toggleCompleted="toggleCompleted"
-        v-for="(task, index) in filteredTasks"
+        v-for="(task, index) in store.filteredTasks"
         :key="index"
         :task="task"
       />
     </div>
 
-    <ModalWindow v-if="modalIsActive" @closeModal="modalIsActive = false">
+    <ModalWindow v-if="store.modalIsActive">
       <AddTaskModal/>
     </ModalWindow>
   </main>
@@ -182,3 +98,36 @@ const filterClicked = (value) => {
   }
 }
 </style>
+
+
+<!-- <script setup>
+import { useForm, useField } from 'vee-validate'
+import * as yup from 'yup'
+
+const { handleSubmit } = useForm({
+  validationSchema: yup.object({
+    name: yup.string().required(),
+    email: yup.string().email().required()
+  })
+})
+
+const { value: name, errorMessage: nameError } = useField('name')
+const { value: email, errorMessage: emailError } = useField('email')
+
+const onSubmit = handleSubmit(values => {
+  console.log('Submitted:', values)
+})
+</script>
+
+<template>
+  <form @submit.prevent="onSubmit">
+    <input v-model="name" placeholder="Name" />
+    <span>{{ nameError }}</span>
+
+    <input v-model="email" placeholder="Email" />
+    <span>{{ emailError }}</span>
+
+    <button type="submit">Submit</button>
+  </form>
+</template> -->
+
